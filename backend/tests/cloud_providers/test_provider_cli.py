@@ -162,8 +162,8 @@ class TestCLITargets:
 
         assert result.exit_code == 0
         data = json.loads(result.output)
-        assert data["total"] == 8
-        assert len(data["targets"]) == 8
+        assert data["total"] == len(ALL_PROVIDERS)
+        assert len(data["targets"]) == len(ALL_PROVIDERS)
 
     def test_targets_empty(self):
         runner = CliRunner()
