@@ -1,9 +1,9 @@
 <h1 align="center">Arkive</h1>
 
 <p align="center">
-  <strong>Automated disaster recovery for Unraid servers.</strong><br />
-  Discover containers. Dump databases. Encrypt everything. Sync to the cloud.<br />
-  All on autopilot.
+  <strong>Open-source backup and disaster recovery for Unraid servers.</strong><br />
+  Discover Docker workloads, capture application-aware database dumps, encrypt every snapshot,
+  and restore with confidence.
 </p>
 
 <p align="center">
@@ -16,11 +16,11 @@
 
 ---
 
-## Why Arkive?
+## About Arkive
 
-Most backup tools require you to manually configure every database, every directory, every container. Arkive doesn't.
+Most backup tools make you configure every container, database, and directory by hand. Arkive does not.
 
-**Arkive auto-discovers your Docker containers and their databases**, creates application-aware dumps, encrypts everything with restic, and syncs to your cloud storage — with zero manual configuration. It's the only open-source backup tool that does this.
+Arkive is an open-source backup and recovery system built for Unraid. It auto-discovers Docker containers and their databases, creates application-aware dumps, stores encrypted restic snapshots, and supports cloud or local storage targets from a single interface.
 
 ## Status
 
