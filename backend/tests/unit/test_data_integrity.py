@@ -872,15 +872,40 @@ class TestOrchestratorFailureHandling:
         """A successful upload with failed database dumps should report partial."""
         from app.services.db_dumper import DumpResult
 
+        class StubDbEntry:
+            def __init__(self, container_name, db_type, db_name):
+                self.container_name = container_name
+                self.db_type = db_type
+                self.db_name = db_name
+                self.host_path = None
+
+            def model_dump(self):
+                return {
+                    "container_name": self.container_name,
+                    "db_type": self.db_type,
+                    "db_name": self.db_name,
+                    "host_path": self.host_path,
+                }
+
+        class StubContainer:
+            def __init__(self):
+                self.name = "vaultwarden"
+                self.image = "vaultwarden/server:latest"
+                self.status = "running"
+                self.ports = []
+                self.mounts = []
+                self.profile = "generic"
+                self.priority = "normal"
+                self.compose_project = None
+                self.databases = [
+                    StubDbEntry("vaultwarden", "sqlite", "db.sqlite3"),
+                    StubDbEntry("tautulli", "sqlite", "tautulli.db"),
+                ]
+
         with patch("app.services.orchestrator.decrypt_config", return_value={}):
             orchestrator = make_orchestrator(mock_config, snapshots_return=[])
             orchestrator._self_backup = AsyncMock()
-            orchestrator.discovery = MagicMock(scan=AsyncMock(return_value=[
-                MagicMock(databases=[
-                    MagicMock(container_name="vaultwarden", db_type="sqlite", db_name="db.sqlite3"),
-                    MagicMock(container_name="tautulli", db_type="sqlite", db_name="tautulli.db"),
-                ])
-            ]))
+            orchestrator.discovery = MagicMock(scan=AsyncMock(return_value=[StubContainer()]))
             orchestrator.db_dumper.dump_all = AsyncMock(return_value=[
                 DumpResult(
                     container_name="vaultwarden",

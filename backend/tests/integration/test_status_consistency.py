@@ -1,5 +1,7 @@
 import json
+from pathlib import Path
 import aiosqlite
+from unittest.mock import patch
 
 from tests.conftest import do_setup
 
@@ -109,7 +111,11 @@ async def test_status_uses_latest_discovery_after_backup_refresh(client):
         config=app.state.config,
     )
 
-    result = await orchestrator.run_backup("job1", run_id="run2", trigger="manual")
+    from app.services import orchestrator as orchestrator_module
+
+    lock_file = Path(app.state.config.config_dir) / "backup.lock"
+    with patch.object(orchestrator_module, "LOCK_FILE", lock_file):
+        result = await orchestrator.run_backup("job1", run_id="run2", trigger="manual")
     assert result["status"] in {"success", "partial"}
 
     status_after = await client.get("/api/status")
