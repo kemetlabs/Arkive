@@ -1,0 +1,11 @@
+name: adguard
+image_patterns:
+  - "adguard/adguardhome"
+priority: medium
+databases: []
+backup_paths:
+  - "/opt/adguardhome/conf"
+  - "/opt/adguardhome/work"
+exclude_patterns:
+  - "work/data/querylog.json*"
+notes: "DNS ad-blocker. Config-only backup — no database. Exclude large query logs."

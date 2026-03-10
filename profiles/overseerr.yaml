@@ -1,0 +1,16 @@
+name: overseerr
+image_patterns:
+  - "linuxserver/overseerr"
+  - "lscr.io/linuxserver/overseerr"
+  - "sctx/overseerr"
+priority: low
+databases:
+  - type: sqlite
+    path: "/app/config/db/db.sqlite3"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/app/config"
+exclude_patterns:
+  - "logs/**"
+  - "cache/**"
+notes: "Media request manager. SQLite database with user requests and settings."

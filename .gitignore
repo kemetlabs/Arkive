@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/.venv/
+backend/venv/
+.venv/
+*.egg-info/
+dist/
+build/
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node.js
+node_modules/
+frontend/node_modules/
+frontend/build/
+frontend/.svelte-kit/
+.svelte-kit/
+
+# Playwright
+.playwright-cli/
+.playwright/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arkive runtime data
+/config/
+config/arkive.db
+config/arkive.db-wal
+config/arkive.db-shm
+config/.keyfile
+config/.api_key
+config/rclone.conf
+config/dumps/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+dumps/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Claude / Autoforge
+.claude/
+.autoforge/
+
+# Reference docs (tracked in context/ folder)
+/ARKIVE-COMPLETE-REPORT.md
+/ARKIVE-ONE-SHOT-BUILD.md
+link

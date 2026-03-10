@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Wasabi: leaf/pea shape -->
+  <circle cx="12" cy="12" r="8" fill="#56B847"/>
+  <path d="M12 5C9 8 8 10 8.5 13.5C9 17 12 19 12 19C12 19 15 17 15.5 13.5C16 10 15 8 12 5Z" fill="white" opacity="0.25"/>
+  <circle cx="12" cy="12" r="4" fill="#56B847" stroke="white" stroke-width="1" opacity="0.8"/>
+  <circle cx="12" cy="12" r="1.5" fill="white" opacity="0.4"/>
+</svg>

@@ -1,0 +1,53 @@
+<script lang="ts">
+	import { Activity } from 'lucide-svelte';
+
+	export let hostname: string = '';
+	export let systemStatus: string = 'unknown';
+	export let onBackup: (() => void) | undefined = undefined;
+	export let backupDisabled: boolean = false;
+
+	const statusColors: Record<string, string> = {
+		healthy: 'bg-success',
+		degraded: 'bg-warning',
+		error: 'bg-danger',
+		unknown: 'bg-neutral',
+	};
+
+	const statusLabels: Record<string, string> = {
+		healthy: 'All Systems Operational',
+		degraded: 'Degraded Performance',
+		error: 'System Error',
+		unknown: 'Status Unknown',
+	};
+
+	$: dotColor = statusColors[systemStatus] ?? statusColors.unknown;
+	$: statusLabel = statusLabels[systemStatus] ?? statusLabels.unknown;
+</script>
+
+<div class="flex items-center justify-between px-4 py-2.5 bg-bg-elevated border border-border rounded-lg">
+	<div class="flex items-center gap-4">
+		{#if hostname}
+			<span class="text-sm font-medium text-text font-mono">{hostname}</span>
+			<span class="w-px h-4 bg-border"></span>
+		{/if}
+		<div class="flex items-center gap-2">
+			<span class="w-2 h-2 rounded-full shrink-0 {dotColor}"></span>
+			<span class="text-sm text-text-secondary">{statusLabel}</span>
+		</div>
+	</div>
+	<div class="flex items-center gap-2">
+		<a href="/logs" class="btn-ghost btn-sm flex items-center gap-1.5">
+			<Activity class="w-3.5 h-3.5" />
+			View Logs
+		</a>
+		{#if onBackup}
+			<button
+				on:click={onBackup}
+				disabled={backupDisabled}
+				class="btn-primary btn-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+			>
+				Run Backup
+			</button>
+		{/if}
+	</div>
+</div>

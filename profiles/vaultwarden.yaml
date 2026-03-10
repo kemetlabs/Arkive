@@ -1,0 +1,14 @@
+name: vaultwarden
+image_patterns:
+  - "vaultwarden/server"
+  - "bitwardenrs/server"
+priority: critical
+databases:
+  - type: sqlite
+    path: "/data/db.sqlite3"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/data"
+exclude_patterns:
+  - "icon_cache/**"
+notes: "Critical password manager. SQLite WAL mode — always use .backup, never cp."

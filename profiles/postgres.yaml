@@ -1,0 +1,22 @@
+name: postgres
+image_patterns:
+  - "postgres:*"
+  - "*/postgres:*"
+  - "postgis/*"
+priority: high
+databases:
+  - type: postgres
+    env_vars:
+      db_name: ["POSTGRES_DB"]
+      db_user: ["POSTGRES_USER"]
+      db_pass: ["POSTGRES_PASSWORD"]
+    ports: [5432]
+    method: pg_dump
+    dump_command: "pg_dumpall -U ${POSTGRES_USER:-postgres}"
+    restore_command: "gunzip -c dump.sql.gz | docker exec -i CONTAINER psql -U postgres"
+    integrity_check: "pg_dumpall -U ${POSTGRES_USER:-postgres} --schema-only > /dev/null"
+    timeout_seconds: 3600
+backup_paths:
+  - "/var/lib/postgresql/data"
+exclude_patterns: []
+notes: "PostgreSQL database. Uses pg_dumpall via docker exec. Credentials from container env vars."

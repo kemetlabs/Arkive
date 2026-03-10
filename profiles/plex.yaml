@@ -1,0 +1,18 @@
+name: plex
+image_patterns:
+  - "plexinc/pms-docker"
+  - "linuxserver/plex"
+  - "lscr.io/linuxserver/plex"
+priority: medium
+databases:
+  - type: sqlite
+    path: "/config/Library/Application Support/Plex Media Server/Plug-in Support/Databases/com.plexapp.plugins.library.db"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/config"
+exclude_patterns:
+  - "Cache/**"
+  - "Codecs/**"
+  - "Crash Reports/**"
+  - "Logs/**"
+notes: "Media server. Only config is critical — media files are typically on separate shares."

@@ -1,0 +1,14 @@
+services:
+  arkive:
+    build: .
+    container_name: arkive-dev
+    ports:
+      - "8200:8200"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./dev-config:/config
+      - ./dev-data:/data
+    environment:
+      - ARKIVE_DEV_MODE=1
+      - ARKIVE_LOG_LEVEL=DEBUG
+      - TZ=UTC

@@ -1,0 +1,19 @@
+name: immich
+image_patterns:
+  - "ghcr.io/immich-app/immich-server"
+  - "altran1502/immich-server"
+priority: high
+databases:
+  - type: postgres
+    env_vars:
+      db_name: ["DB_DATABASE_NAME", "POSTGRES_DB"]
+      db_user: ["DB_USERNAME", "POSTGRES_USER"]
+      db_pass: ["DB_PASSWORD", "POSTGRES_PASSWORD"]
+      db_host: ["DB_HOSTNAME", "DB_HOST"]
+    method: pg_dump
+backup_paths:
+  - "/usr/src/app/upload"
+exclude_patterns:
+  - "thumbs/**"
+  - "encoded-video/**"
+notes: "Photo library. Exclude thumbs and encoded-video to save 30-50 GB. Postgres DB is in a separate container."

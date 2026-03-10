@@ -1,0 +1,20 @@
+name: influxdb
+image_patterns:
+  - "influxdb:*"
+  - "*/influxdb:*"
+priority: medium
+databases:
+  - type: influxdb
+    env_vars:
+      db_token: ["DOCKER_INFLUXDB_INIT_ADMIN_TOKEN", "INFLUXDB_ADMIN_TOKEN"]
+      db_org: ["DOCKER_INFLUXDB_INIT_ORG", "INFLUXDB_ORG"]
+      db_bucket: ["DOCKER_INFLUXDB_INIT_BUCKET", "INFLUXDB_BUCKET"]
+    ports: [8086]
+    method: influx_backup
+    dump_command: "influx backup /tmp/influx-backup --host http://localhost:8086 --token $TOKEN"
+    restore_command: "influx restore /tmp/influx-backup --host http://localhost:8086 --token $TOKEN"
+    timeout_seconds: 1800
+backup_paths:
+  - "/var/lib/influxdb2"
+exclude_patterns: []
+notes: "InfluxDB v2. Uses influx backup CLI. Token required for authentication."

@@ -1,0 +1,42 @@
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.22
+sse-starlette==2.2.1
+
+# Database
+aiosqlite==0.22.1
+
+# Docker
+docker==7.1.0
+
+# Scheduler
+apscheduler==3.10.4
+croniter==3.0.3
+
+# Notifications (90+ services)
+apprise==1.9.1
+
+# HTTP client
+httpx==0.28.1
+
+# Config
+pyyaml==6.0.3
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# Security
+cryptography==44.0.0
+
+# CLI
+click==8.1.8
+
+# PDF generation (restore plan)
+weasyprint==62.3
+pydyf==0.11.0  # pinned: 0.12.x breaks weasyprint 62.x stream.transform()
+jinja2==3.1.5
+
+# Utilities
+python-dateutil==2.9.0
+structlog==24.4.0
+psutil==7.2.2

@@ -1,0 +1,23 @@
+name: paperless-ngx
+image_patterns:
+  - "ghcr.io/paperless-ngx/paperless-ngx"
+  - "jonaswinkler/paperless-ng"
+priority: critical
+databases:
+  - type: postgres
+    env_vars:
+      db_name: ["PAPERLESS_DBNAME", "POSTGRES_DB"]
+      db_user: ["PAPERLESS_DBUSER", "POSTGRES_USER"]
+      db_pass: ["PAPERLESS_DBPASS", "POSTGRES_PASSWORD"]
+      db_host: ["PAPERLESS_DBHOST", "POSTGRES_HOST"]
+    method: pg_dump
+  - type: sqlite
+    path: "/usr/src/paperless/data/db.sqlite3"
+    method: host_sqlite3_backup
+    condition: "no_postgres_env"
+backup_paths:
+  - "/usr/src/paperless/data"
+  - "/usr/src/paperless/media"
+exclude_patterns:
+  - "data/index/**"
+notes: "Document manager. DB name may be auto-generated (e.g., Ran00n1993). Always extract from env vars."

@@ -1,0 +1,13 @@
+name: authelia
+image_patterns:
+  - "authelia/authelia"
+  - "ghcr.io/authelia/authelia"
+priority: critical
+databases:
+  - type: sqlite
+    path: "/config/db.sqlite3"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/config"
+exclude_patterns: []
+notes: "Auth gateway. Critical — losing this locks users out of all proxied services. Container lacks sqlite3 binary — must use host binary on bind mount."

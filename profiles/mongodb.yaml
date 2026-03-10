@@ -1,0 +1,21 @@
+name: mongodb
+image_patterns:
+  - "mongo:*"
+  - "*/mongo:*"
+  - "mongodb/mongodb-community-server"
+priority: high
+databases:
+  - type: mongodb
+    env_vars:
+      db_user: ["MONGO_INITDB_ROOT_USERNAME"]
+      db_pass: ["MONGO_INITDB_ROOT_PASSWORD"]
+      db_name: ["MONGO_INITDB_DATABASE"]
+    ports: [27017]
+    method: mongodump
+    dump_command: "mongodump --archive --gzip"
+    restore_command: "mongorestore --archive --gzip < dump.archive.gz"
+    timeout_seconds: 3600
+backup_paths:
+  - "/data/db"
+exclude_patterns: []
+notes: "MongoDB. Uses mongodump via docker exec with archive format."

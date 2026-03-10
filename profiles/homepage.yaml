@@ -1,0 +1,10 @@
+name: homepage
+image_patterns:
+  - "ghcr.io/gethomepage/homepage"
+  - "ghcr.io/benphelps/homepage"
+priority: low
+databases: []
+backup_paths:
+  - "/app/config"
+exclude_patterns: []
+notes: "Dashboard. Config-only — YAML files. Quick to recreate but nice to have backed up."

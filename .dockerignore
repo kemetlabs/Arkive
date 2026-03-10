@@ -1,0 +1,56 @@
+# Version control and CI
+.git
+.github
+
+# IDE and editor
+.vscode
+.idea
+
+# Claude Code and OMC
+.omc
+.claude
+.playwright-mcp
+
+# Node modules (top-level and frontend)
+node_modules
+frontend/node_modules
+
+# Python caches
+__pycache__
+*.pyc
+.pytest_cache
+.coverage
+htmlcov/
+
+# Backend dev artifacts
+backend/.venv
+backend/tests
+backend/logs
+
+# Frontend dev artifacts
+frontend/.svelte-kit
+frontend/test-results
+frontend/playwright-report
+
+# Documentation (except README)
+docs
+website
+*.md
+!README.md
+
+# Environment and secrets
+.env
+.env.local
+
+# Local data (not needed in image)
+config/
+dumps/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Misc
+.autoforge/
+dev-config/
+dev-data/

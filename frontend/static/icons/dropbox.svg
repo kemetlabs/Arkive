@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Dropbox: diamond/box shape -->
+  <path d="M12 3L6 7.5L12 12L6 16.5L12 21L18 16.5L12 12L18 7.5L12 3Z" fill="#0061FF"/>
+  <path d="M6 16.5L12 12L18 16.5L12 21L6 16.5Z" fill="#0061FF" opacity="0.6"/>
+</svg>

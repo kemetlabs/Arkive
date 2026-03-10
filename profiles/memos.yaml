@@ -1,0 +1,13 @@
+name: memos
+image_patterns:
+  - "neosmemo/memos"
+  - "ghcr.io/usememos/memos"
+priority: high
+databases:
+  - type: sqlite
+    path: "/var/opt/memos/memos_prod.db"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/var/opt/memos"
+exclude_patterns: []
+notes: "Note-taking app. SQLite DB — container lacks sqlite3 binary, use host binary."

@@ -1,0 +1,15 @@
+name: _fallback
+image_patterns: []
+priority: low
+databases: []
+backup_paths: []
+exclude_patterns:
+  - "cache/**"
+  - "Cache/**"
+  - "logs/**"
+  - "Logs/**"
+  - "*.log"
+  - "*.tmp"
+  - "node_modules/**"
+  - "__pycache__/**"
+notes: "Default fallback profile for unrecognized containers. Backs up bind-mounted appdata paths. Excludes common cache and log directories."

@@ -1,0 +1,25 @@
+name: mariadb
+image_patterns:
+  - "mariadb:*"
+  - "*/mariadb:*"
+  - "mysql:*"
+  - "*/mysql:*"
+  - "linuxserver/mariadb"
+priority: high
+databases:
+  - type: mysql
+    env_vars:
+      db_name: ["MYSQL_DATABASE", "MARIADB_DATABASE"]
+      db_user: ["MYSQL_USER", "MARIADB_USER"]
+      db_pass: ["MYSQL_PASSWORD", "MARIADB_PASSWORD"]
+      db_root_pass: ["MYSQL_ROOT_PASSWORD", "MARIADB_ROOT_PASSWORD"]
+    ports: [3306]
+    method: mysqldump
+    dump_command: "mysqldump -u root -p${MYSQL_ROOT_PASSWORD} --all-databases"
+    restore_command: "gunzip -c dump.sql.gz | docker exec -i CONTAINER mysql -u root -p"
+    integrity_check: "mysqlcheck -u root -p${MYSQL_ROOT_PASSWORD} --all-databases"
+    timeout_seconds: 3600
+backup_paths:
+  - "/var/lib/mysql"
+exclude_patterns: []
+notes: "MariaDB/MySQL database. Uses mysqldump via docker exec."

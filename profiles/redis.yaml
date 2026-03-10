@@ -1,0 +1,16 @@
+name: redis
+image_patterns:
+  - "redis:*"
+  - "*/redis:*"
+  - "valkey/valkey"
+priority: low
+databases:
+  - type: redis
+    ports: [6379]
+    method: redis_bgsave
+    dump_command: "redis-cli BGSAVE"
+    timeout_seconds: 300
+backup_paths:
+  - "/data"
+exclude_patterns: []
+notes: "Redis/Valkey. Triggers BGSAVE then backs up the RDB file. Usually ephemeral cache — low priority."

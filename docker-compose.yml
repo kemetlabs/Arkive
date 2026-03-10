@@ -1,0 +1,21 @@
+services:
+  arkive:
+    image: islamdiaa/arkive:latest
+    container_name: arkive
+    restart: unless-stopped
+    # Unraid full-coverage mode needs root inside the container to read flash config
+    # and app-owned SQLite files from host-mounted shares.
+    user: "0:0"
+    ports:
+      - "8200:8200"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Required for flash backup: mount the Unraid flash config at /boot-config.
+      - /boot/config:/boot-config:ro
+      - /mnt/user:/mnt/user:ro
+      - /mnt/user/appdata/arkive:/config
+      - /mnt/user/appdata/arkive/local-backup:/data
+      - /mnt/user/appdata/arkive/cache:/cache
+    environment:
+      - TZ=America/New_York
+      # - ARKIVE_LICENSE_KEY=  # Optional: license key for paid tiers (v0.3+)

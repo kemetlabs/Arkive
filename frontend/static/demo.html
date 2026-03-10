@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arkive — Dashboard Demo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        page: '#0d1117',
+        surface: '#1c2333',
+        border: '#30363d',
+        text: '#e6edf3',
+        'text-secondary': '#8b949e',
+        accent: '#388bfd',
+        'accent-hover': '#58a6ff',
+        success: '#3fb950',
+        warning: '#d29922',
+        danger: '#f85149',
+      }
+    }
+  }
+}
+</script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; }
+  .mono { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; }
+  @keyframes pulse-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+  .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+</style>
+</head>
+<body class="bg-page text-text min-h-screen flex">
+
+<!-- Sidebar -->
+<aside class="w-56 bg-surface border-r border-border flex flex-col h-screen sticky top-0">
+  <div class="p-4 border-b border-border">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-sm">A</div>
+      <div>
+        <div class="font-semibold text-sm">Arkive</div>
+        <div class="text-[10px] text-text-secondary uppercase tracking-widest">Disaster Recovery</div>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-md bg-accent/10 text-accent text-sm font-medium">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <a href="#backups" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+      Backups
+    </a>
+    <a href="#databases" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+      Databases
+    </a>
+    <a href="#snapshots" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Snapshots
+    </a>
+    <a href="#activity" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Activity
+    </a>
+    <a href="#restore" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+      Restore Plan
+    </a>
+    <a href="#logs" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Logs
+    </a>
+    <div class="pt-2">
+      <a href="#settings" class="flex items-center gap-3 px-3 py-2 rounded-md text-text-secondary hover:text-text hover:bg-white/5 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Settings
+      </a>
+    </div>
+  </nav>
+  <div class="p-3 border-t border-border">
+    <div class="flex items-center justify-between text-xs text-text-secondary">
+      <span>v0.1.0</span>
+      <span class="bg-accent/20 text-accent px-2 py-0.5 rounded text-[10px] font-medium">Community</span>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="flex-1 flex flex-col min-h-screen">
+  <!-- Header -->
+  <header class="h-14 border-b border-border flex items-center justify-between px-6 bg-surface/50 backdrop-blur-sm sticky top-0 z-10">
+    <h1 class="text-lg font-semibold">Dashboard</h1>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 text-xs text-text-secondary">
+        <div class="w-2 h-2 rounded-full bg-success pulse-glow"></div>
+        All systems operational
+      </div>
+      <button class="p-2 rounded-md hover:bg-white/5 text-text-secondary">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Dashboard Content -->
+  <main class="flex-1 p-6 space-y-6 overflow-auto">
+
+    <!-- Status Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-surface border border-border rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-text-secondary text-xs uppercase tracking-wider font-medium">System</span>
+          <div class="w-2 h-2 rounded-full bg-success"></div>
+        </div>
+        <p class="text-2xl font-semibold">Healthy</p>
+        <p class="text-xs text-text-secondary mt-1">unraid &middot; v0.1.0</p>
+      </div>
+
+      <div class="bg-surface border border-border rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-text-secondary text-xs uppercase tracking-wider font-medium">Last Backup</span>
+          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success/20 text-success">success</span>
+        </div>
+        <p class="text-2xl font-semibold">12 min ago</p>
+        <p class="text-xs text-text-secondary mt-1">Next: in 2 hours</p>
+      </div>
+
+      <div class="bg-surface border border-border rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-text-secondary text-xs uppercase tracking-wider font-medium">Discovered</span>
+        </div>
+        <p class="text-2xl font-semibold">14 <span class="text-text-secondary text-base">containers</span></p>
+        <p class="text-xs text-text-secondary mt-1">6 databases found</p>
+      </div>
+
+      <div class="bg-surface border border-border rounded-lg p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-text-secondary text-xs uppercase tracking-wider font-medium">Storage Used</span>
+        </div>
+        <p class="text-2xl font-semibold">12.0 GB</p>
+        <p class="text-xs text-text-secondary mt-1">47 snapshots across 2 targets</p>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center gap-3">
+      <button class="bg-accent hover:bg-accent-hover text-white px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+        Backup Now
+      </button>
+      <button class="bg-surface hover:bg-white/5 text-text border border-border px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        Restore Plan
+      </button>
+      <button class="bg-surface hover:bg-white/5 text-text border border-border px-4 py-2 rounded-md font-medium transition-colors flex items-center gap-2 text-sm">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        Run Discovery
+      </button>
+    </div>
+
+    <!-- Two columns: Jobs + Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Backup Jobs -->
+      <div class="bg-surface border border-border rounded-lg p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">Backup Jobs</h3>
+          <a href="#" class="text-xs text-accent hover:text-accent-hover">Manage</a>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-3 border-b border-border">
+            <div>
+              <p class="text-sm font-medium">Daily Full Backup</p>
+              <p class="text-xs text-text-secondary mono">0 3 * * *</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success/20 text-success">success</span>
+              <span class="text-xs text-success">Active</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between py-3">
+            <div>
+              <p class="text-sm font-medium">Hourly DB Snapshots</p>
+              <p class="text-xs text-text-secondary mono">0 * * * *</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-success/20 text-success">success</span>
+              <span class="text-xs text-success">Active</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="bg-surface border border-border rounded-lg p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold">Recent Activity</h3>
+          <a href="#" class="text-xs text-accent hover:text-accent-hover">View All</a>
+        </div>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3 py-2 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-success"></div>
+            <div><p class="text-sm">Daily Full Backup completed successfully</p><p class="text-xs text-text-secondary">12 min ago</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-2 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-blue-400"></div>
+            <div><p class="text-sm">Snapshot created on Backblaze B2</p><p class="text-xs text-text-secondary">12 min ago</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-2 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-blue-400"></div>
+            <div><p class="text-sm">Dumped 6 databases (11.2 GB total)</p><p class="text-xs text-text-secondary">13 min ago</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-2 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-blue-400"></div>
+            <div><p class="text-sm">Discovered 14 containers, 6 databases</p><p class="text-xs text-text-secondary">13 min ago</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-2 border-b border-border">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-success"></div>
+            <div><p class="text-sm">Hourly DB Snapshots completed</p><p class="text-xs text-text-secondary">1 hour ago</p></div>
+          </div>
+          <div class="flex items-start gap-3 py-2">
+            <div class="w-1.5 h-1.5 rounded-full mt-2 shrink-0 bg-blue-400"></div>
+            <div><p class="text-sm">All storage targets healthy</p><p class="text-xs text-text-secondary">2 hours ago</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Storage Targets -->
+    <div class="bg-surface border border-border rounded-lg p-5" id="backups">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Storage Targets</h3>
+        <button class="text-xs bg-accent/10 text-accent px-3 py-1 rounded hover:bg-accent/20 transition-colors">+ Add Target</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="border border-border rounded-lg p-4 bg-page/50">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded bg-orange-500/20 flex items-center justify-center text-orange-400 text-xs font-bold">B2</div>
+              <div>
+                <p class="text-sm font-medium">Backblaze B2 — Primary</p>
+                <p class="text-xs text-text-secondary mono">arkive-tower-backups</p>
+              </div>
+            </div>
+            <div class="w-2 h-2 rounded-full bg-success"></div>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-text-secondary">
+            <span>12.0 GB / 100.0 GB</span>
+            <span>35 snapshots</span>
+          </div>
+          <div class="mt-2 w-full bg-page rounded-full h-1.5">
+            <div class="bg-accent rounded-full h-1.5" style="width: 12%"></div>
+          </div>
+        </div>
+        <div class="border border-border rounded-lg p-4 bg-page/50">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded bg-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold">SF</div>
+              <div>
+                <p class="text-sm font-medium">SFTP — TrueNAS</p>
+                <p class="text-xs text-text-secondary mono">192.168.1.50</p>
+              </div>
+            </div>
+            <div class="w-2 h-2 rounded-full bg-success"></div>
+          </div>
+          <div class="flex items-center gap-4 text-xs text-text-secondary">
+            <span>8.0 GB / 50.0 GB</span>
+            <span>12 snapshots</span>
+          </div>
+          <div class="mt-2 w-full bg-page rounded-full h-1.5">
+            <div class="bg-accent rounded-full h-1.5" style="width: 16%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Databases -->
+    <div class="bg-surface border border-border rounded-lg p-5" id="databases">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Discovered Databases</h3>
+        <button class="text-xs bg-accent/10 text-accent px-3 py-1 rounded hover:bg-accent/20 transition-colors">Rescan</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-text-secondary text-xs uppercase tracking-wider border-b border-border">
+              <th class="text-left py-3 px-2">Container</th>
+              <th class="text-left py-3 px-2">Engine</th>
+              <th class="text-left py-3 px-2">Database</th>
+              <th class="text-left py-3 px-2">Size</th>
+              <th class="text-left py-3 px-2">Last Dump</th>
+              <th class="text-left py-3 px-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-border/50 hover:bg-white/[0.02]">
+              <td class="py-3 px-2 mono text-xs">immich-postgres</td>
+              <td class="py-3 px-2"><span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">postgres</span></td>
+              <td class="py-3 px-2">immich</td>
+              <td class="py-3 px-2 text-text-secondary">2.0 GB</td>
+              <td class="py-3 px-2 text-text-secondary">12 min ago</td>
+              <td class="py-3 px-2"><span class="text-success text-xs">healthy</span></td>
+            </tr>
+            <tr class="border-b border-border/50 hover:bg-white/[0.02]">
+              <td class="py-3 px-2 mono text-xs">vaultwarden-db</td>
+              <td class="py-3 px-2"><span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">postgres</span></td>
+              <td class="py-3 px-2">vaultwarden</td>
+              <td class="py-3 px-2 text-text-secondary">50 MB</td>
+              <td class="py-3 px-2 text-text-secondary">12 min ago</td>
+              <td class="py-3 px-2"><span class="text-success text-xs">healthy</span></td>
+            </tr>
+            <tr class="border-b border-border/50 hover:bg-white/[0.02]">
+              <td class="py-3 px-2 mono text-xs">paperless-db</td>
+              <td class="py-3 px-2"><span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">postgres</span></td>
+              <td class="py-3 px-2">paperless</td>
+              <td class="py-3 px-2 text-text-secondary">1.0 GB</td>
+              <td class="py-3 px-2 text-text-secondary">12 min ago</td>
+              <td class="py-3 px-2"><span class="text-success text-xs">healthy</span></td>
+            </tr>
+            <tr class="border-b border-border/50 hover:bg-white/[0.02]">
+              <td class="py-3 px-2 mono text-xs">nextcloud-mariadb</td>
+              <td class="py-3 px-2"><span class="bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded text-xs">mariadb</span></td>
+              <td class="py-3 px-2">nextcloud</td>
+              <td class="py-3 px-2 text-text-secondary">3.0 GB</td>
+              <td class="py-3 px-2 text-text-secondary">12 min ago</td>
+              <td class="py-3 px-2"><span class="text-success text-xs">healthy</span></td>
+            </tr>
+            <tr class="border-b border-border/50 hover:bg-white/[0.02]">
+              <td class="py-3 px-2 mono text-xs">authelia-redis</td>
+              <td class="py-3 px-2"><span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded text-xs">redis</span></td>
+              <td class="py-3 px-2">authelia</td>
+              <td class="py-3 px-2 text-text-secondary">10 MB</td>
+              <td class="py-3 px-2 text-text-secondary">12 min ago</td>
+              <td class="py-3 px-2"><span class="text-success text-xs">healthy</span></td>
+            </tr>
+            <tr class="hover:bg-white/[0.02]">
+              <td class="py-3 px-2 mono text-xs">home-assistant-influx</td>
+              <td class="py-3 px-2"><span class="bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded text-xs">influxdb</span></td>
+              <td class="py-3 px-2">homeassistant</td>
+              <td class="py-3 px-2 text-text-secondary">5.0 GB</td>
+              <td class="py-3 px-2 text-text-secondary">12 min ago</td>
+              <td class="py-3 px-2"><span class="text-success text-xs">healthy</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Logs Preview -->
+    <div class="bg-surface border border-border rounded-lg p-5" id="logs">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold">Recent Logs</h3>
+        <a href="#" class="text-xs text-accent hover:text-accent-hover">View Full Logs</a>
+      </div>
+      <div class="bg-page rounded-lg p-4 mono text-xs leading-6 overflow-x-auto max-h-64 overflow-y-auto">
+        <div class="text-text-secondary">[2026-02-26T03:00:00Z] <span class="text-blue-400">INFO</span>  Starting daily backup run...</div>
+        <div class="text-text-secondary">[2026-02-26T03:00:01Z] <span class="text-blue-400">INFO</span>  Discovery: scanning Docker socket...</div>
+        <div class="text-text-secondary">[2026-02-26T03:00:02Z] <span class="text-blue-400">INFO</span>  Found 14 containers, 6 databases</div>
+        <div class="text-text-secondary">[2026-02-26T03:00:03Z] <span class="text-blue-400">INFO</span>  Dumping postgres: immich (2.0 GB)</div>
+        <div class="text-text-secondary">[2026-02-26T03:00:45Z] <span class="text-blue-400">INFO</span>  Dumping postgres: vaultwarden (50 MB)</div>
+        <div class="text-text-secondary">[2026-02-26T03:00:50Z] <span class="text-blue-400">INFO</span>  Dumping postgres: paperless (1.0 GB)</div>
+        <div class="text-text-secondary">[2026-02-26T03:01:20Z] <span class="text-blue-400">INFO</span>  Dumping mariadb: nextcloud (3.0 GB)</div>
+        <div class="text-text-secondary">[2026-02-26T03:02:00Z] <span class="text-blue-400">INFO</span>  Dumping redis: authelia (10 MB)</div>
+        <div class="text-text-secondary">[2026-02-26T03:02:05Z] <span class="text-blue-400">INFO</span>  Dumping influxdb: homeassistant (5.0 GB)</div>
+        <div class="text-text-secondary">[2026-02-26T03:03:30Z] <span class="text-blue-400">INFO</span>  Creating restic snapshot...</div>
+        <div class="text-text-secondary">[2026-02-26T03:04:00Z] <span class="text-success">INFO</span>  Snapshot created: abc123def</div>
+        <div class="text-text-secondary">[2026-02-26T03:04:01Z] <span class="text-blue-400">INFO</span>  Syncing to Backblaze B2...</div>
+        <div class="text-text-secondary">[2026-02-26T03:05:42Z] <span class="text-success">INFO</span>  Backup complete. Duration: 5m42s. Size: 12.0 GB</div>
+        <div class="text-text-secondary">[2026-02-26T03:05:43Z] <span class="text-blue-400">INFO</span>  Notification sent to Discord</div>
+        <div class="text-text-secondary">[2026-02-26T03:05:44Z] <span class="text-blue-400">INFO</span>  Retention: pruned 2 old snapshots</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>

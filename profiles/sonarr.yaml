@@ -1,0 +1,19 @@
+name: sonarr
+image_patterns:
+  - "linuxserver/sonarr"
+  - "lscr.io/linuxserver/sonarr"
+  - "hotio/sonarr"
+priority: medium
+databases:
+  - type: sqlite
+    path: "/config/sonarr.db"
+    method: host_sqlite3_backup
+  - type: sqlite
+    path: "/config/logs.db"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/config"
+exclude_patterns:
+  - "logs/**"
+  - "MediaCover/**"
+notes: "TV show manager. Two SQLite databases — main config and logs."

@@ -1,0 +1,19 @@
+name: radarr
+image_patterns:
+  - "linuxserver/radarr"
+  - "lscr.io/linuxserver/radarr"
+  - "hotio/radarr"
+priority: medium
+databases:
+  - type: sqlite
+    path: "/config/radarr.db"
+    method: host_sqlite3_backup
+  - type: sqlite
+    path: "/config/logs.db"
+    method: host_sqlite3_backup
+backup_paths:
+  - "/config"
+exclude_patterns:
+  - "logs/**"
+  - "MediaCover/**"
+notes: "Movie manager. Same structure as Sonarr — two SQLite databases."

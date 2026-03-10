@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { font-family: 'Inter', sans-serif; color: #e6edf3; background: #0d1117; padding: 40px; }
+  h1 { color: #388bfd; border-bottom: 2px solid #30363d; padding-bottom: 8px; }
+  h2 { color: #58a6ff; margin-top: 24px; }
+  h3 { color: #8b949e; margin-top: 16px; }
+  .warning { background: rgba(210, 153, 34, 0.1); border: 1px solid #d29922; padding: 12px; border-radius: 6px; margin: 16px 0; }
+  .critical { color: #f85149; font-weight: bold; }
+  code { background: #161b22; padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  pre { background: #161b22; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; font-family: 'JetBrains Mono', monospace; color: #e6edf3; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: #161b22; text-align: left; padding: 8px 12px; border: 1px solid #30363d; color: #8b949e; }
+  td { padding: 8px 12px; border: 1px solid #30363d; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+  .badge-critical { background: rgba(248, 81, 73, 0.15); color: #f85149; }
+  .badge-high { background: rgba(210, 153, 34, 0.15); color: #d29922; }
+  .badge-medium { background: rgba(56, 139, 253, 0.15); color: #388bfd; }
+  .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #30363d; color: #6e7681; font-size: 12px; }
+</style>
+</head>
+<body>
+  <h1>🔐 Arkive Disaster Recovery Plan</h1>
+  <p>Server: <strong>{{ server_name }}</strong> | Generated: {{ generated_at }} | Platform: {{ platform }}</p>
+
+  <div class="warning">
+    <strong>⚠️ RESTIC PASSWORD REQUIRED</strong><br>
+    Password: <code>{{ restic_password }}</code><br>
+    Without this password, your backups are <span class="critical">permanently unrecoverable</span>.
+    Store this password in a secure location separate from your server.
+  </div>
+
+  <h2>1. Prerequisites</h2>
+  <pre>
+# Install restic and rclone on the recovery machine
+apt install restic rclone  # Debian/Ubuntu
+# or
+brew install restic rclone  # macOS
+
+# Copy your rclone config
+# Original location: /config/rclone.conf inside the Arkive container
+  </pre>
+
+  <h2>2. Restore Restic Snapshots</h2>
+  {% for target in targets %}
+  <h3>Target: {{ target.name }} ({{ target.type }})</h3>
+  <table>
+    <tr><th>Property</th><th>Value</th></tr>
+    <tr><td>Target ID</td><td><code>{{ target.id }}</code></td></tr>
+    <tr><td>Type</td><td>{{ target.type }}</td></tr>
+    <tr><td>Snapshots</td><td>{{ target.snapshot_count }}</td></tr>
+    <tr><td>Total Size</td><td>{{ target.total_size }}</td></tr>
+  </table>
+  <pre>
+# List available snapshots
+export RESTIC_PASSWORD="{{ restic_password }}"
+restic -r rclone:{{ target.id }}:arkive-backups snapshots
+
+# Restore latest snapshot
+restic -r rclone:{{ target.id }}:arkive-backups restore latest --target /restore-staging/
+
+# Or restore a specific snapshot
+restic -r rclone:{{ target.id }}:arkive-backups restore SNAPSHOT_ID --target /restore-staging/
+  </pre>
+  {% endfor %}
+
+  <h2>3. Restore Databases</h2>
+  {% if databases %}
+  <table>
+    <tr><th>Container</th><th>Type</th><th>Database</th><th>Priority</th></tr>
+    {% for db in databases %}
+    <tr>
+      <td>{{ db.container }}</td>
+      <td>{{ db.type }}</td>
+      <td><code>{{ db.db_name }}</code></td>
+      <td><span class="badge badge-{{ db.priority }}">{{ db.priority }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% for db in databases %}
+  <h3>{{ db.container }} — {{ db.type }} (<code>{{ db.db_name }}</code>)</h3>
+  <pre>{{ db.restore_command }}</pre>
+  {% endfor %}
+  {% else %}
+  <p>No databases discovered. Run discovery scan to detect databases.</p>
+  {% endif %}
+
+  <h2>4. Restore Flash Config</h2>
+  {% if flash_available %}
+  <pre>
+# Flash config backup is stored in the restic snapshot under /config/dumps/
+ls /restore-staging/config/dumps/flash_*.tar.gz
+tar -xzf /restore-staging/config/dumps/flash_TIMESTAMP.tar.gz -C /boot/config/
+
+# Verify critical files exist
+ls -la /boot/config/super.dat
+ls -la /boot/config/go
+ls -la /boot/config/plugins/
+  </pre>
+  {% else %}
+  <p><em>Flash backup not available (non-Unraid platform).</em></p>
+  {% endif %}
+
+  <h2>5. Restart Docker Containers</h2>
+  <pre>
+# If using Docker Compose
+cd /boot/config/plugins/compose.manager/projects/
+docker compose up -d
+
+# If using individual containers (Unraid)
+# Containers will auto-start based on Unraid's autostart settings
+# after restoring /boot/config/
+  </pre>
+
+  <h2>6. Verification Checklist</h2>
+  <ul>
+  {% for check in verification_checks %}
+    <li>☐ {{ check }}</li>
+  {% endfor %}
+  </ul>
+
+  <h2>7. Emergency Contacts</h2>
+  <ul>
+    <li>Arkive GitHub Issues: <a href="https://github.com/islamdiaa/arkive/issues">github.com/islamdiaa/arkive/issues</a></li>
+    <li>Unraid Forums: <a href="https://forums.unraid.net">forums.unraid.net</a></li>
+    <li>restic Documentation: <a href="https://restic.readthedocs.io">restic.readthedocs.io</a></li>
+  </ul>
+
+  <div class="footer">
+    Generated by Arkive v{{ version }} | {{ generated_at }}<br>
+    This document contains sensitive credentials. Store securely and do not share publicly.
+  </div>
+</body>
+</html>
