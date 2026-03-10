@@ -58,6 +58,10 @@ Arkive is under active development. Core backup, snapshot, restore, and cloud-ta
 
 ## Quick Start
 
+### Production Deployment
+
+Arkive is designed to run as a long-lived container on your Unraid server or another Docker host. For production, use the published image from GHCR and persist `/config` on durable storage.
+
 ### Docker Compose (recommended)
 
 ```yaml
@@ -83,13 +87,50 @@ services:
 docker compose up -d
 ```
 
-Open `http://your-server:8200`. On a new install, Arkive shows the setup wizard. After setup is complete, the browser UI may redirect to `/login` and ask for the admin API key once to create a browser session.
+### Docker Run
+
+```bash
+docker run -d \
+  --name arkive \
+  --restart unless-stopped \
+  --user 0:0 \
+  -p 8200:8200 \
+  -e TZ=America/New_York \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v /mnt/user/appdata/arkive:/config \
+  -v /mnt/user/appdata:/mnt/user/appdata:ro \
+  -v /boot/config:/boot-config:ro \
+  ghcr.io/islamdiaa/arkive:latest
+```
+
+### First Boot
+
+Open `http://your-server:8200`. On a new install, Arkive opens the setup wizard, where you configure:
+
+- encryption password
+- storage targets
+- backup schedules
+- optional extra directories
+- notifications
+
+After setup is complete, the browser UI may redirect to `/login` and ask for the admin API key once to create a browser session.
 
 Ensure the host path mounted at `/config` is writable by the container runtime before first boot. If you add explicit `/data` or `/cache` mounts, make those writable too.
 
 On Unraid, run Arkive as `root` for full coverage. Flash backup (`/boot/config`) and some app-owned SQLite files are not readable to non-root UIDs, so use `user: "0:0"` in Compose or `--user 0:0` with `docker run`.
 
 After deployment, you can run the homeserver smoke test in [docs/homeserver-smoke-test.md](docs/homeserver-smoke-test.md).
+
+### Upgrading
+
+To upgrade a production deployment:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+or, if you use `docker run`, pull the new image and recreate the container while keeping the same `/config` volume.
 
 ### Unraid Community Applications
 
@@ -192,6 +233,8 @@ Full API documentation is available at `http://your-server:8200/docs` (OpenAPI/S
 ---
 
 ## Development
+
+The commands below are for local development only. They are not required for a normal production deployment.
 
 ### Prerequisites
 
