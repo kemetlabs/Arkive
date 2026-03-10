@@ -13,6 +13,7 @@
 	import { subscribe as sseSubscribe } from '$lib/stores/sse';
 	import { formatBytes } from '$lib/utils/format';
 	import { timeAgo } from '$lib/utils/date';
+	import { describeCron } from '$lib/utils/schedule';
 	import { onMount, onDestroy } from 'svelte';
 
 	let data: DashboardData | null = null;
@@ -180,7 +181,8 @@
 							<div class="flex items-center justify-between py-2 border-b border-border last:border-0">
 								<div>
 									<p class="text-sm font-medium text-text">{job.name}</p>
-									<p class="text-xs text-text-secondary font-mono">{job.schedule}</p>
+									<p class="text-xs text-text-secondary">{describeCron(job.schedule)}</p>
+									<p class="text-[11px] text-text-muted font-mono mt-0.5">{job.schedule}</p>
 								</div>
 								<div class="flex items-center gap-2">
 									{#if job.last_run?.status}
@@ -210,7 +212,10 @@
 					<a href="/activity" class="text-xs text-primary hover:text-primary-hover">View All</a>
 				</div>
 				{#if data.activity.length === 0}
-					<p class="text-sm text-text-secondary">No activity yet.</p>
+					<div class="rounded-lg border border-dashed border-border-muted bg-bg-elevated/50 p-4">
+						<p class="text-sm text-text-secondary">No activity yet.</p>
+						<p class="text-xs text-text-muted mt-1">Run your first backup or test a target to populate the activity feed.</p>
+					</div>
 				{:else}
 					<div class="space-y-3">
 						{#each data.activity as entry}

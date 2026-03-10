@@ -2,6 +2,7 @@
 
 import inspect
 import logging
+import sqlite3
 import time
 from collections import defaultdict
 from typing import Any
@@ -108,8 +109,11 @@ async def require_auth(
         raise RateLimitError("Too many failed attempts. Try again later.", retry_after=LOCKOUT_DURATION)
 
     # Setup mode bypass
-    row = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
-    result = await row.fetchone()
+    try:
+        row = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
+        result = await row.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return  # Schema still bootstrapping — treat as setup mode
     if not result:
         return  # No API key set yet — setup mode
 
@@ -136,8 +140,11 @@ async def require_sse_auth(
 ) -> None:
     """Validate short-lived SSE token from ?token= query param."""
     # Check setup mode
-    cursor = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
-    result = await cursor.fetchone()
+    try:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
+        result = await cursor.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return
     if not result:
         return  # setup not complete
 

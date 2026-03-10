@@ -10,6 +10,7 @@
 	import FormToggle from '$lib/components/ui/FormToggle.svelte';
 	import ConfirmDangerModal from '$lib/components/ui/ConfirmDangerModal.svelte';
 	import StatusBadge from '$lib/components/shared/StatusBadge.svelte';
+	import { describeCron } from '$lib/utils/schedule';
 
 	let jobs: any[] = [];
 	let loading = true;
@@ -24,20 +25,6 @@
 	let deleteConfirmId = '';
 	let deleteConfirmOpen = false;
 	let deleteConfirmName = '';
-
-	// Simple cron human-readable translation
-	function describeCron(expr: string): string {
-		const presets: Record<string, string> = {
-			'0 2 * * *': 'Daily at 2:00 AM',
-			'0 3 * * *': 'Daily at 3:00 AM',
-			'0 7 * * *': 'Daily at 7:00 AM',
-			'0 */6 * * *': 'Every 6 hours',
-			'0 */12 * * *': 'Every 12 hours',
-			'0 3 * * 0': 'Weekly on Sunday at 3:00 AM',
-			'0 0 * * *': 'Daily at midnight',
-		};
-		return presets[expr] || expr;
-	}
 
 	onMount(async () => {
 		try {

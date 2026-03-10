@@ -8,6 +8,7 @@
 	import { applySession } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import CronEditor from '$lib/components/shared/CronEditor.svelte';
 
 	let step = 1;
 	let hydrated = false;
@@ -484,22 +485,16 @@
 			{:else if step === 4}
 				<!-- Step 4: Schedule -->
 				<h2 class="text-lg font-semibold text-text mb-2">Backup Schedule</h2>
-				<p class="text-sm text-text-secondary mb-6">Configure when backups run. Uses cron syntax.</p>
+				<p class="text-sm text-text-secondary mb-6">Configure when backups run. Each schedule shows upcoming run times so you do not have to read raw cron.</p>
 				<div class="space-y-4">
 					<div>
-						<label for="db-dump-schedule" class="block text-sm text-text-secondary mb-1">Database Dumps</label>
-						<input id="db-dump-schedule" type="text" bind:value={dbDumpSchedule} class="input font-mono" />
-						<p class="text-xs text-text-secondary mt-1">Default: every 6 hours</p>
+						<CronEditor bind:value={dbDumpSchedule} label="Database Dumps" />
 					</div>
 					<div>
-						<label for="cloud-sync-schedule" class="block text-sm text-text-secondary mb-1">Cloud Sync</label>
-						<input id="cloud-sync-schedule" type="text" bind:value={cloudSyncSchedule} class="input font-mono" />
-						<p class="text-xs text-text-secondary mt-1">Default: daily at 2 AM</p>
+						<CronEditor bind:value={cloudSyncSchedule} label="Cloud Sync" />
 					</div>
 					<div>
-						<label for="flash-schedule" class="block text-sm text-text-secondary mb-1">Flash Backup (Unraid)</label>
-						<input id="flash-schedule" type="text" bind:value={flashSchedule} class="input font-mono" />
-						<p class="text-xs text-text-secondary mt-1">Default: every 15 minutes</p>
+						<CronEditor bind:value={flashSchedule} label="Flash Backup (Unraid)" />
 					</div>
 				</div>
 				<div class="mt-6 flex justify-between">

@@ -218,6 +218,23 @@ async def test_session_returns_setup_required_before_setup(client):
     assert resp.json().get("setup_required") is True
 
 
+async def test_session_returns_setup_required_for_uninitialized_db_file(tmp_path_factory):
+    """Session bootstrap should force setup if the SQLite file exists without schema."""
+    from tests.conftest import build_test_client
+
+    config_dir = tmp_path_factory.mktemp("auth-session-uninitialized")
+    async with build_test_client(config_dir) as client:
+        app = client._transport.app
+        app.state.config.db_path.unlink(missing_ok=True)
+        app.state.config.db_path.touch()
+
+        resp = await client.get("/api/auth/session")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["setup_required"] is True
+        assert body["authenticated"] is False
+
+
 async def test_session_returns_setup_metadata_after_setup(client):
     await do_setup(client, keep_session=True)
     resp = await client.get("/api/auth/session")

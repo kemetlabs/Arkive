@@ -2,6 +2,7 @@
 
 import json
 import os
+import sqlite3
 import time
 import uuid
 from collections import defaultdict
@@ -101,13 +102,19 @@ def _clear_browser_session(response: Response, request: Request) -> None:
 
 
 async def _session_payload(request: Request, db: aiosqlite.Connection) -> dict[str, object]:
-    cursor = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
-    row = await cursor.fetchone()
+    try:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
+        row = await cursor.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return {"setup_required": True, "authenticated": False}
     if not row:
         return {"setup_required": True, "authenticated": False}
 
-    cursor = await db.execute("SELECT value FROM settings WHERE key = 'setup_completed_at'")
-    ts_row = await cursor.fetchone()
+    try:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = 'setup_completed_at'")
+        ts_row = await cursor.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        ts_row = None
     session_token = request.cookies.get(BROWSER_SESSION_COOKIE, "")
     payload: dict[str, object] = {
         "setup_required": False,

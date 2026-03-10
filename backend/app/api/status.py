@@ -6,6 +6,7 @@ import os
 import shutil
 import socket
 import time
+import sqlite3
 
 import aiosqlite
 from fastapi import APIRouter, Depends, Request
@@ -93,6 +94,16 @@ def _check_binaries() -> dict:
     return {"ok": True, "message": "restic and rclone available"}
 
 
+async def _fetch_setting(db: aiosqlite.Connection, key: str) -> str | None:
+    """Return a setting value, tolerating first-boot schema races."""
+    try:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = ?", (key,))
+        row = await cursor.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return None
+    return row["value"] if row and row["value"] is not None else None
+
+
 async def _check_db_health(db: aiosqlite.Connection) -> dict:
     """Check DB connectivity with a simple query."""
     try:
@@ -110,8 +121,11 @@ async def _database_stats(db: aiosqlite.Connection) -> tuple[int, int, bool]:
     actually produced database dump records. If no such run exists yet,
     healthy remains 0 and has_health_sample is False.
     """
-    cursor = await db.execute("SELECT databases FROM discovered_containers")
-    rows = await cursor.fetchall()
+    try:
+        cursor = await db.execute("SELECT databases FROM discovered_containers")
+        rows = await cursor.fetchall()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return 0, 0, False
 
     discovered_keys: set[tuple[str, str, str]] = set()
     for row in rows:
@@ -134,27 +148,33 @@ async def _database_stats(db: aiosqlite.Connection) -> tuple[int, int, bool]:
     if total_databases == 0:
         return 0, 0, False
 
-    cursor = await db.execute(
-        """SELECT jr.id
-           FROM job_runs jr
-           WHERE EXISTS (
-               SELECT 1 FROM job_run_databases jrd WHERE jrd.run_id = jr.id
-           )
-           ORDER BY jr.started_at DESC
-           LIMIT 1"""
-    )
-    latest_run = await cursor.fetchone()
+    try:
+        cursor = await db.execute(
+            """SELECT jr.id
+               FROM job_runs jr
+               WHERE EXISTS (
+                   SELECT 1 FROM job_run_databases jrd WHERE jrd.run_id = jr.id
+               )
+               ORDER BY jr.started_at DESC
+               LIMIT 1"""
+        )
+        latest_run = await cursor.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return total_databases, 0, False
     if not latest_run:
         return total_databases, 0, False
 
     run_id = latest_run["id"] if isinstance(latest_run, aiosqlite.Row) else latest_run[0]
-    cursor = await db.execute(
-        """SELECT container_name, db_name, db_type, status
-           FROM job_run_databases
-           WHERE run_id = ?""",
-        (run_id,),
-    )
-    rows = await cursor.fetchall()
+    try:
+        cursor = await db.execute(
+            """SELECT container_name, db_name, db_type, status
+               FROM job_run_databases
+               WHERE run_id = ?""",
+            (run_id,),
+        )
+        rows = await cursor.fetchall()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        return total_databases, 0, False
 
     successful_keys: set[tuple[str, str, str]] = set()
     for row in rows:
@@ -222,25 +242,25 @@ async def get_status(request: Request, db: aiosqlite.Connection = Depends(get_db
         overall_status = "ok"
 
     # Setup check
-    cursor = await db.execute("SELECT value FROM settings WHERE key = 'api_key_hash'")
-    api_key_row = await cursor.fetchone()
-    setup_completed = api_key_row is not None
+    api_key_hash = await _fetch_setting(db, "api_key_hash")
+    setup_completed = api_key_hash is not None
 
     # Platform
-    cursor = await db.execute("SELECT value FROM settings WHERE key = 'platform'")
-    platform_row = await cursor.fetchone()
     runtime_platform = getattr(getattr(request.app, "state", None), "platform", None)
     if isinstance(runtime_platform, str):
         runtime_platform_value = runtime_platform
     else:
         runtime_platform_value = getattr(runtime_platform, "value", "linux")
-    platform = (platform_row["value"] if platform_row and platform_row["value"] else runtime_platform_value)
+    platform = (await _fetch_setting(db, "platform")) or runtime_platform_value
 
     # Last backup
-    cursor = await db.execute(
-        "SELECT * FROM job_runs ORDER BY started_at DESC LIMIT 1"
-    )
-    last_run = await cursor.fetchone()
+    try:
+        cursor = await db.execute(
+            "SELECT * FROM job_runs ORDER BY started_at DESC LIMIT 1"
+        )
+        last_run = await cursor.fetchone()
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        last_run = None
     last_backup = None
     if last_run:
         last_backup = {
@@ -251,12 +271,18 @@ async def get_status(request: Request, db: aiosqlite.Connection = Depends(get_db
         }
 
     # Targets
-    cursor = await db.execute("SELECT COUNT(*) as total FROM storage_targets")
-    total_targets = (await cursor.fetchone())["total"]
-    cursor = await db.execute(
-        "SELECT COUNT(*) as healthy FROM storage_targets WHERE status IN ('healthy', 'online', 'ok')"
-    )
-    healthy_targets = (await cursor.fetchone())["healthy"]
+    try:
+        cursor = await db.execute("SELECT COUNT(*) as total FROM storage_targets")
+        total_targets = (await cursor.fetchone())["total"]
+        cursor = await db.execute(
+            "SELECT COUNT(*) as healthy FROM storage_targets WHERE status IN ('healthy', 'online', 'ok')"
+        )
+        healthy_targets = (await cursor.fetchone())["healthy"]
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        total_targets = 0
+        healthy_targets = 0
+        if overall_status == "ok":
+            overall_status = "degraded"
 
     # Target health as a warning if some targets are unhealthy
     if total_targets > 0 and healthy_targets < total_targets and overall_status == "ok":
@@ -274,8 +300,11 @@ async def get_status(request: Request, db: aiosqlite.Connection = Depends(get_db
         overall_status = "degraded"
 
     # Storage
-    cursor = await db.execute("SELECT COALESCE(SUM(total_size_bytes), 0) as total FROM storage_targets")
-    total_bytes = (await cursor.fetchone())["total"]
+    try:
+        cursor = await db.execute("SELECT COALESCE(SUM(total_size_bytes), 0) as total FROM storage_targets")
+        total_bytes = (await cursor.fetchone())["total"]
+    except (sqlite3.OperationalError, aiosqlite.OperationalError):
+        total_bytes = 0
 
     return {
         "status": overall_status,
