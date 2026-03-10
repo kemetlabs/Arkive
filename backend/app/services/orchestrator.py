@@ -204,19 +204,21 @@ class BackupOrchestrator:
             return "Another backup is already running"
         return "Backup could not start because the lock could not be acquired"
 
-    async def _mark_run_conflict(self, run_id: str, job_id: str, trigger: str, message: str) -> None:
-        """Persist an immediately-failed run when startup is blocked by a lock conflict."""
+    async def _mark_run_conflict(self, run_id: str, job_id: str, trigger: str, message: str) -> str:
+        """Persist a terminal run when startup is blocked by a lock conflict."""
         now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        terminal_status = "skipped" if trigger == "scheduled" else "failed"
+        severity = "info" if trigger == "scheduled" else "warning"
         async with aiosqlite.connect(self.config.db_path) as db:
             await db.execute(
                 """INSERT OR IGNORE INTO job_runs
                    (id, job_id, status, trigger, started_at, completed_at, duration_seconds, error_message)
-                   VALUES (?, ?, 'failed', ?, ?, ?, 0, ?)""",
-                (run_id, job_id, trigger, now, now, message),
+                   VALUES (?, ?, ?, ?, ?, ?, 0, ?)""",
+                (run_id, job_id, terminal_status, trigger, now, now, message),
             )
             await db.execute(
-                """UPDATE job_runs
-                   SET status = 'failed', completed_at = ?, duration_seconds = 0, error_message = ?
+                f"""UPDATE job_runs
+                   SET status = '{terminal_status}', completed_at = ?, duration_seconds = 0, error_message = ?
                    WHERE id = ?""",
                 (now, message, run_id),
             )
@@ -227,12 +229,13 @@ class BackupOrchestrator:
                     "backup",
                     "completed",
                     message,
-                    json.dumps({"run_id": run_id, "job_id": job_id, "status": "failed"}),
-                    "warning",
+                    json.dumps({"run_id": run_id, "job_id": job_id, "status": terminal_status}),
+                    severity,
                     now,
                 ),
             )
             await db.commit()
+        return terminal_status
 
     def _acquire_lock(self, run_id: str | None = None) -> bool:
         """Acquire backup lock atomically. Returns False if already locked.
@@ -372,10 +375,12 @@ class BackupOrchestrator:
         if not self._acquire_lock(run_id):
             message = self._lock_conflict_message()
             logger.warning("Backup run %s could not start: %s", run_id, message)
-            await self._mark_run_conflict(run_id, job_id, trigger, message)
-            await self.event_bus.publish("backup:failed", {
+            terminal_status = await self._mark_run_conflict(run_id, job_id, trigger, message)
+            event_name = "backup:cancelled" if terminal_status == "skipped" else "backup:failed"
+            await self.event_bus.publish(event_name, {
                 "run_id": run_id,
                 "job_id": job_id,
+                "status": terminal_status,
                 "error": message,
                 "error_category": "conflict",
                 "user_action": "Wait for the current backup/restore operation to finish",

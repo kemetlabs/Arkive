@@ -114,3 +114,46 @@ async def test_run_backup_marks_precreated_run_failed_when_restore_lock_blocks_s
         assert activity is not None
         assert activity["message"] == "Restore operation in progress"
         assert activity["severity"] == "warning"
+
+
+@pytest.mark.asyncio
+async def test_run_backup_marks_scheduled_conflict_as_skipped(orchestrator_config, db_path, tmp_path):
+    """Scheduled conflicts should not count as failed backups."""
+    from app.services import orchestrator as orchestrator_module
+
+    orchestrator = make_orchestrator(orchestrator_config)
+    orchestrator._acquire_lock = MagicMock(return_value=False)
+
+    backup_lock = tmp_path / "backup.lock"
+    backup_lock.write_text('{"pid":123,"proc_start_time":"abc"}')
+
+    with patch.object(orchestrator_module, "LOCK_FILE", backup_lock), patch.object(
+        orchestrator_module, "RESTORE_LOCK_FILE", tmp_path / "restore.lock"
+    ):
+        result = await orchestrator.run_backup("job-1", trigger="scheduled", run_id="run-sched")
+
+    assert result["status"] == "conflict"
+    assert result["message"] == "Another backup is already running"
+
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        cursor = await db.execute(
+            "SELECT status, duration_seconds, completed_at, error_message FROM job_runs WHERE id = 'run-sched'"
+        )
+        row = await cursor.fetchone()
+        assert row is not None
+        assert row["status"] == "skipped"
+        assert row["duration_seconds"] == 0
+        assert row["completed_at"] is not None
+        assert row["error_message"] == "Another backup is already running"
+
+        cursor = await db.execute(
+            """SELECT message, severity, details FROM activity_log
+               WHERE type = 'backup' AND action = 'completed'
+               ORDER BY rowid DESC LIMIT 1"""
+        )
+        activity = await cursor.fetchone()
+        assert activity is not None
+        assert activity["message"] == "Another backup is already running"
+        assert activity["severity"] == "info"
+        assert '"status": "skipped"' in activity["details"]
