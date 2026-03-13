@@ -31,6 +31,7 @@ Branch:
 - `main`
 
 Recent important commits:
+- `554ed4c` `fix: return total_snapshots from status endpoint`
 - `5df66a6` `fix: replace personal hostname in test fixtures`
 - `344684f` `feat: smart directory discovery with one-click add`
 - `4f5eb86` `fix: avoid bandit SQL warning in conflict status update`
@@ -388,6 +389,8 @@ When changing provider config handling:
 When changing UI status rendering:
 - verify icon mapping and empty states
 - verify the dashboard is not showing stale data after backend fixes
+- **every field the frontend reads from `/api/status` must exist in the return dict** — if the frontend reads `data.status?.foo`, the backend must return `foo`. Check `frontend/src/routes/+page.svelte` and `frontend/src/lib/api/mock.ts` for expected fields.
+- the mock in `mock.ts` must also include any new fields so demo mode works
 
 ## Repo Hygiene Rules
 
@@ -424,6 +427,7 @@ Not current blockers, but worth monitoring:
 - user confusion when target config points to a bucket/path different from what they expect
 - CI duration if more integration-heavy coverage gets added
 - future regressions where backup-time discovery and status aggregation drift apart again
+- frontend/backend field mismatches: the "0 snapshots" bug was caused by the frontend reading `total_snapshots` from a status response that never included it — always cross-check both sides when adding dashboard data
 
 ## Fast Resume Checklist
 
@@ -451,5 +455,6 @@ At the time this handoff was updated:
   - activity feed badge rendering
   - first-boot bootstrap stability
   - smart directory discovery and one-click add
+  - snapshot count display on dashboard (was returning 0 due to missing field in status API)
 
 If something in one of those areas looks broken again, start by checking for a regression against those fixes rather than assuming a new unrelated problem.
