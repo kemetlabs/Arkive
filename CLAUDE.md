@@ -31,6 +31,8 @@ Branch:
 - `main`
 
 Recent important commits:
+- `5df66a6` `fix: replace personal hostname in test fixtures`
+- `344684f` `feat: smart directory discovery with one-click add`
 - `4f5eb86` `fix: avoid bandit SQL warning in conflict status update`
 - `e925cd3` `fix: skip scheduled backup collisions`
 - `94ffc86` `fix: persist discovery refresh and normalize target config`
@@ -68,6 +70,7 @@ Frontend files most recently relevant:
 - `frontend/src/routes/+page.svelte`
 - `frontend/src/routes/setup/+page.svelte`
 - `frontend/src/routes/activity/+page.svelte`
+- `frontend/src/routes/settings/directories/+page.svelte`
 - `frontend/src/lib/components/shared/StatusBadge.svelte`
 - `frontend/src/lib/utils/schedule.ts`
 
@@ -239,7 +242,38 @@ Relevant files:
 Why it matters:
 - provider misconfig is hard enough already; silent whitespace drift makes it worse
 
-### 10. Prior deep QA and hardening already completed before the latest public cleanup
+### 10. Smart directory discovery with one-click add
+
+Problem:
+- users had to manually find and type directory paths to add them to watched directories
+- no guidance on which directories are worth backing up vs. massive re-downloadable media stores
+
+Fix:
+- `POST /directories/scan` now dynamically discovers all `/mnt/user/` subdirectories
+- classifies by name (`SKIP_NAMES`), size (`SMALL_DIR_THRESHOLD`), and content (`_is_media_dominated`)
+- returns prioritized suggestions with size estimates, file counts, and recommended exclude patterns
+- frontend shows one-click "Add" buttons with priority badges (critical/recommended/optional)
+
+Key design decisions:
+- blocking filesystem I/O runs in `asyncio.to_thread()` to avoid blocking the event loop
+- classification helpers are module-level functions for testability
+- "photos" is NOT in `SKIP_NAMES` — personal photos are irreplaceable
+- well-known paths (`known_paths`) only include genuinely backup-worthy dirs (appdata, docker, domains) — NOT media/isos, which must go through the normal skip-name/media-dominated filtering
+- frontend updates local state after add/remove instead of re-scanning the filesystem
+
+Relevant files:
+- `backend/app/api/directories.py` (scan endpoint + classification helpers)
+- `frontend/src/routes/settings/directories/+page.svelte`
+- `frontend/src/lib/api/mock.ts` (mock must return `suggestions` key)
+- `backend/tests/unit/test_directory_classification.py`
+- `backend/tests/integration/test_api_directory_suggestions.py`
+
+Lessons learned during review:
+- do NOT put media/isos directories in `known_paths` — they bypass filtering and create bad suggestions
+- unit tests must import from production code, not duplicate constants
+- frontend must save path variables before clearing form fields if the path is needed later
+
+### 11. Prior deep QA and hardening already completed before the latest public cleanup
 
 Earlier work in this repo lifecycle already fixed and validated other important issues, including:
 - MinIO/S3 repo-path correctness
@@ -330,6 +364,13 @@ If future work touches schedule UI or dashboard summaries:
 - `frontend/src/routes/setup/+page.svelte`
 - `frontend/src/lib/utils/schedule.ts`
 
+If future work touches directory discovery or watched directories:
+- `backend/app/api/directories.py`
+- `frontend/src/routes/settings/directories/+page.svelte`
+- do NOT add media/isos paths to `known_paths` — they must go through skip-name filtering
+- ensure `_is_media_dominated` and `SKIP_NAMES` stay module-level for testability
+- keep blocking I/O in `asyncio.to_thread()`
+
 When changing discovery behavior:
 - verify discovered results themselves
 - verify backup-time discovery persistence
@@ -358,10 +399,23 @@ Do not commit:
 - host access details
 - internal-only troubleshooting notes
 - private infrastructure identifiers unless they are already generic test fixtures
+- real server hostnames (e.g., "AdamTower" was found and replaced with "test-server" — do not reintroduce)
+- real IP addresses of the developer's infrastructure
+- seedbox credentials or private tracker details
+
+Test fixtures must use generic values:
+- hostnames: `test-server`, `tower`, `unraid-test`
+- IPs: `192.168.1.100` (standard example only in placeholder text)
+- users: `alice`, `bob`, `test-user`
+- never use real personal identifiers even in test code
 
 If you add handoff docs:
 - keep them product- and code-focused
 - avoid operational secrets
+
+Before submitting PRs:
+- grep the diff for personal hostnames, IPs, credentials
+- security scanning should be a standard part of the PR process
 
 ## Known Watch Areas
 
@@ -386,8 +440,9 @@ If picking this repo up cold:
 
 At the time this handoff was updated:
 - public repo cleanup was complete
-- the recent CI failure had been fixed by `4f5eb86`
-- all open PRs had been closed
+- smart directory discovery feature was merged (PR #26)
+- personal hostname "AdamTower" was cleaned from all test fixtures
+- security scan confirmed: no credentials, private keys, or personal data remain in the repo
 - the app had live-validated fixes for:
   - hostname reporting
   - stale degraded dashboard state
@@ -395,5 +450,6 @@ At the time this handoff was updated:
   - Postgres companion discovery
   - activity feed badge rendering
   - first-boot bootstrap stability
+  - smart directory discovery and one-click add
 
 If something in one of those areas looks broken again, start by checking for a regression against those fixes rather than assuming a new unrelated problem.
