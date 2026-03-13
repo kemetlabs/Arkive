@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOCKERHUB_IMAGE: islamdiaa/arkive
+  DOCKERHUB_IMAGE: kemetlabs/arkive
 
 jobs:
   lint:

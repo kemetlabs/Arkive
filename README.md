@@ -7,8 +7,8 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/islamdiaa/Arkive/actions/workflows/build.yml"><img src="https://github.com/islamdiaa/Arkive/actions/workflows/build.yml/badge.svg" alt="CI" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/islamdiaa/Arkive" alt="License" /></a>
+  <a href="https://github.com/kemetlabs/Arkive/actions/workflows/build.yml"><img src="https://github.com/kemetlabs/Arkive/actions/workflows/build.yml/badge.svg" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/kemetlabs/Arkive" alt="License" /></a>
   <img src="https://img.shields.io/badge/python-3.12-blue" alt="Python" />
   <img src="https://img.shields.io/badge/platform-amd64%20%7C%20arm64-lightgrey" alt="Platform" />
 </p>
@@ -67,7 +67,7 @@ Arkive is designed to run as a long-lived container on your Unraid server or ano
 ```yaml
 services:
   arkive:
-    image: ghcr.io/islamdiaa/arkive:latest
+    image: ghcr.io/kemetlabs/arkive:latest
     container_name: arkive
     # On Unraid, run as root for flash backup and app-owned SQLite host reads.
     user: "0:0"
@@ -100,7 +100,7 @@ docker run -d \
   -v /mnt/user/appdata/arkive:/config \
   -v /mnt/user/appdata:/mnt/user/appdata:ro \
   -v /boot/config:/boot-config:ro \
-  ghcr.io/islamdiaa/arkive:latest
+  ghcr.io/kemetlabs/arkive:latest
 ```
 
 ### First Boot
@@ -137,7 +137,7 @@ or, if you use `docker run`, pull the new image and recreate the container while
 Search for **Arkive** in the [Community Applications](https://unraid.net/community/apps) store, or install manually:
 
 ```
-https://raw.githubusercontent.com/islamdiaa/Arkive/main/unraid-template.xml
+https://raw.githubusercontent.com/kemetlabs/Arkive/main/unraid-template.xml
 ```
 
 ---
@@ -246,7 +246,7 @@ The commands below are for local development only. They are not required for a n
 
 ```bash
 # Clone the repository
-git clone https://github.com/islamdiaa/Arkive.git
+git clone https://github.com/kemetlabs/Arkive.git
 cd Arkive
 
 # Backend

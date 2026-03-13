@@ -23,7 +23,7 @@ Primary product behavior:
   - Python CLI
 
 This repo is now the clean public repository:
-- `https://github.com/islamdiaa/Arkive`
+- `https://github.com/kemetlabs/Arkive`
 
 ## Current Repo State
 
